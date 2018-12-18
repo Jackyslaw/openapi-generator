@@ -38,6 +38,7 @@ import org.openapitools.codegen.utils.ModelUtils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,6 +48,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.mockito.Mockito.*;
 
 
 public class DefaultCodegenTest {
@@ -579,5 +582,134 @@ public class DefaultCodegenTest {
         cm.setVars(Collections.emptyList());
         Map<String, Object> objs = Collections.singletonMap("models", Collections.singletonList(Collections.singletonMap("model", cm)));
         return objs;
+    }
+
+    @Test
+    public void findCommonPrefixOfVars() {
+
+        DefaultCodegen defaultCodegen = new DefaultCodegen();
+        List<Object> listObj = new ArrayList<>();
+        listObj.add("status-on");
+        listObj.add("status-off");
+
+        Assert.assertEquals(defaultCodegen.findCommonPrefixOfVars(listObj), "status-");
+
+        listObj.clear();
+        listObj.add("abcdef");
+        listObj.add("ghijkl");
+
+        Assert.assertEquals(defaultCodegen.findCommonPrefixOfVars(listObj), "");
+    }
+
+    @Test
+    public void testToEnumValueTest() {
+
+        DefaultCodegen defaultCodegen = new DefaultCodegen();
+
+        String datatype = "number";
+        String value = "5";
+
+        Assert.assertEquals(defaultCodegen.toEnumValue(value, datatype), value);
+
+        datatype = "String";
+        value = "status";
+
+        Assert.assertEquals(defaultCodegen.toEnumValue(value, datatype), "\"status\"");
+    }
+
+
+    @Test
+    public void testToEnumVarNameTest() {
+
+        DefaultCodegen defaultCodegen = new DefaultCodegen();
+
+        String datatype = "String";
+        String value = "";
+
+        Assert.assertEquals(defaultCodegen.toEnumVarName(value, datatype), "EMPTY");
+
+        datatype = "String";
+        value = "ENUM";
+
+        Assert.assertEquals(defaultCodegen.toEnumVarName(value, datatype), "ENUM");
+    }
+
+    @Test
+    public void testEscapeQuotationMark() {
+
+        DefaultCodegen defaultCodegen = new DefaultCodegen();
+        String noEscapedQuotationText = " Some text \" quotation \" and some more text";
+        String escapedQuotationText = " Some text \\\" quotation \\\" and some more text";
+
+        Assert.assertEquals(defaultCodegen.escapeQuotationMark(noEscapedQuotationText), escapedQuotationText);
+    }
+
+    @Test
+    public void testEmbeddedTemplateDir() {
+
+        DefaultCodegen defaultCodegen = new DefaultCodegen();
+
+        String embeddedTemplateDir = null;
+        String templateDir = "templateDir";
+        defaultCodegen.embeddedTemplateDir = embeddedTemplateDir;
+        defaultCodegen.templateDir = templateDir;
+
+        Assert.assertEquals(defaultCodegen.embeddedTemplateDir(), templateDir);
+
+        embeddedTemplateDir = "embededTemplateDir";
+        defaultCodegen.embeddedTemplateDir = embeddedTemplateDir;
+        Assert.assertEquals(defaultCodegen.embeddedTemplateDir(), embeddedTemplateDir);
+
+    }
+
+    @Test
+    public void testToApiDocFilename() {
+
+        DefaultCodegen defaultCodegen = new DefaultCodegen();
+
+        String name = "";
+        Assert.assertEquals(defaultCodegen.toApiDocFilename(name), "DefaultApi");
+
+        name = "name";
+        Assert.assertEquals(defaultCodegen.toApiDocFilename(name), "NameApi");
+    }
+
+
+    @Test
+    public void testIsParameterNameUnique() {
+
+        DefaultCodegen defaultCodegen = new DefaultCodegen();
+
+        CodegenParameter codegenParameterToFind = new CodegenParameter();
+        codegenParameterToFind.paramName = "codegenParameterToFind";
+
+        CodegenParameter codegenParameter1 = new CodegenParameter();
+        codegenParameter1.paramName = "codegenParameter1";
+        CodegenParameter codegenParameter2 = new CodegenParameter();
+        codegenParameter2.paramName = "codegenParameter2";
+        CodegenParameter codegenParameter3 = new CodegenParameter();
+        codegenParameter3.paramName = "codegenParameter3";
+        CodegenParameter codegenParameter4 = new CodegenParameter();
+        codegenParameter4.paramName = "codegenParameter4";
+        CodegenParameter codegenParameter5 = new CodegenParameter();
+        codegenParameter5.paramName = "codegenParameter5";
+
+        List<CodegenParameter> parameters = new ArrayList<>();
+        parameters.add(codegenParameter1);
+        parameters.add(codegenParameter2);
+        parameters.add(codegenParameter3);
+        parameters.add(codegenParameter4);
+        parameters.add(codegenParameter5);
+
+        Assert.assertTrue(defaultCodegen.isParameterNameUnique(codegenParameterToFind, parameters));
+        Assert.assertTrue(defaultCodegen.isParameterNameUnique(codegenParameter1, parameters));
+        Assert.assertTrue(defaultCodegen.isParameterNameUnique(codegenParameter2, parameters));
+        Assert.assertTrue(defaultCodegen.isParameterNameUnique(codegenParameter3, parameters));
+        Assert.assertTrue(defaultCodegen.isParameterNameUnique(codegenParameter4, parameters));
+        Assert.assertTrue(defaultCodegen.isParameterNameUnique(codegenParameter5, parameters));
+
+        codegenParameter1.paramName = "codegenParameterToFind";
+        Assert.assertFalse(defaultCodegen.isParameterNameUnique(codegenParameterToFind, parameters));
+
     }
 }

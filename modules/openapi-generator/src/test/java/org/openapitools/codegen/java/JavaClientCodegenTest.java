@@ -54,6 +54,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.mockito.Mockito.*;
+
+
 public class JavaClientCodegenTest {
 
     @Test
@@ -96,6 +99,21 @@ public class JavaClientCodegenTest {
         CodegenModel result = codegen.fromModel("CompSche",
                 schema, Collections.singletonMap("CompSche", schema));
         Assert.assertEquals(result.name, "CompSche");
+    }
+
+    @Test
+    public void nullValuesInComposedSchemaMockito() throws Exception {
+
+        CodegenModel mockedResult = new CodegenModel();
+        mockedResult.setName("NewName");
+
+        JavaClientCodegen codegen = mock(JavaClientCodegen.class);
+        when(codegen.fromModel(null,null,null)).thenReturn(mockedResult);
+
+        ComposedSchema schema = new ComposedSchema();
+        CodegenModel result = codegen.fromModel(null,null,null);
+
+        Assert.assertEquals(result.name, "NewName");
     }
 
     @Test
